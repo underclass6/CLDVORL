@@ -5,3 +5,4 @@ offlinerllib.egg-info/
 results/
 venv/
 wandb/
+.idea/

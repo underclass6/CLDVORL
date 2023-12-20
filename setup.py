@@ -24,17 +24,17 @@ def get_extras_require():
     return {}
 
 setup(
-    name                = "offlinerllib", 
-    version             = VERSION, 
-    description         = "A python module desgined for Offline RL algorithms developing and benchmarking. ", 
-    long_description    = README,
-    long_description_content_type = "text/markdown",
-    url                 = "https://github.com/typoverflow/OfflineRLLib",
-    author              = "typoverflow", 
-    author_email        = "typoverflow@outlook.com", 
-    license             = "MIT", 
-    packages            = find_packages(),
-    include_package_data = True, 
+    # name                = "offlinerllib", 
+    # version             = VERSION, 
+    # description         = "A python module desgined for Offline RL algorithms developing and benchmarking. ", 
+    # long_description    = README,
+    # long_description_content_type = "text/markdown",
+    # url                 = "https://github.com/typoverflow/OfflineRLLib",
+    # author              = "typoverflow", 
+    # author_email        = "typoverflow@outlook.com", 
+    # license             = "MIT", 
+    # packages            = find_packages(),
+    # include_package_data = True, 
     tests_require=["pytest", "mock"], 
     python_requires=">=3.7", 
     install_requires = [
@@ -43,7 +43,7 @@ setup(
         "numpy", 
         "torch", 
         "pandas", 
-        "UtilsRL"
+        "UtilsRL==0.5.9"
     ]
     # install_requires = get_install_requires(), 
     # extras_require = get_extras_require(), 
