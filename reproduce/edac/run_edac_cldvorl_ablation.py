@@ -303,13 +303,36 @@ def traj_valuation(args):
     action_shape = env.action_space.shape[-1]
 
     ### Log
-    exp_name = "_".join([args.d4rl_source_env, args.d4rl_target_env, 'trajValuation', "seed" + str(args.seed)])
-    logger = CompositeLogger(log_path=f"./results/edac/trajValuation", name=exp_name, loggers_config={
-        "FileLogger": {"activate": not args.debug},
-        "TensorboardLogger": {"activate": not args.debug},
-        "WandbLogger": {"activate": not args.debug, "config": args, "settings": wandb.Settings(_disable_stats=True),
-                        **args.wandb}
-    })
+    if args.run_dcla_ratio:
+        logger = CompositeLogger(
+            log_path=f"./ablation_results/edac/{args.d4rl_source_env.split('-')[0]}/{args.d4rl_source_env.split('-')[1]}_{args.d4rl_target_env.split('-')[1]}/dcla_ratio/{args.dcla_ratio}",
+            name=f"edac_{args.d4rl_source_env.split('-')[0]}_{args.d4rl_source_env.split('-')[1]}_{args.d4rl_target_env.split('-')[1]}_dcla_ratio_{args.dcla_ratio}_seed_{args.seed}",
+            loggers_config={
+                "FileLogger": {"activate": not args.debug},
+                "TensorboardLogger": {"activate": not args.debug},
+                "WandbLogger": {"activate": not args.debug, "config": args,
+                                "settings": wandb.Settings(_disable_stats=True), **args.wandb}
+            })
+    elif args.run_modify_ratio:
+        logger = CompositeLogger(
+            log_path=f"./ablation_results/edac/{args.d4rl_source_env.split('-')[0]}/{args.d4rl_source_env.split('-')[1]}_{args.d4rl_target_env.split('-')[1]}/modify_ratio/{args.modify_ratio}/",
+            name=f"edac_{args.d4rl_source_env.split('-')[0]}_{args.d4rl_source_env.split('-')[1]}_{args.d4rl_target_env.split('-')[1]}_modify_ratio_{args.modify_ratio}_seed_{args.seed}",
+            loggers_config={
+                "FileLogger": {"activate": not args.debug},
+                "TensorboardLogger": {"activate": not args.debug},
+                "WandbLogger": {"activate": not args.debug, "config": args,
+                                "settings": wandb.Settings(_disable_stats=True), **args.wandb}
+            })
+    elif args.run_std_scale:
+        logger = CompositeLogger(
+            log_path=f"./ablation_results/edac/{args.d4rl_source_env.split('-')[0]}/{args.d4rl_source_env.split('-')[1]}_{args.d4rl_target_env.split('-')[1]}/std_scale/{args.std_scale}/",
+            name=f"edac_{args.d4rl_source_env.split('-')[0]}_{args.d4rl_source_env.split('-')[1]}_{args.d4rl_target_env.split('-')[1]}_std_scale_{args.std_scale}_seed_{args.seed}",
+            loggers_config={
+                "FileLogger": {"activate": not args.debug},
+                "TensorboardLogger": {"activate": not args.debug},
+                "WandbLogger": {"activate": not args.debug, "config": args,
+                                "settings": wandb.Settings(_disable_stats=True), **args.wandb}
+            })
 
     ### Prepare source & target dataset
     source_env, source_buffer_dataset = get_d4rl_dataset(args.d4rl_source_env, normalize_obs=args.normalize_obs,
@@ -355,19 +378,10 @@ def traj_valuation(args):
     delta_model_path = f"./models/edac/{args.task}/{args.d4rl_source_env}_{args.d4rl_target_env}"
     # Define the model file names
     cf_model_files = ['cla_sa', 'cla_sas']
-    # Check if the model files exist
-    if all(Path(delta_model_path + '/delta_models/' + f).is_file() for f in cf_model_files):
-        # If the model files exist, load them
-        print('Loading delta classifiers...')
-        delta.load_delta_models(delta_model_path)
-        print('Finished loading delta classifiers')
-    else:
-        # If the model files do not exist, train the models and save them
-        print('Start training delta classifiers...')
-        delta.train(source_buffer, target_buffer, args)
-        # for model_file in cf_model_files:
-        delta.save_delta_models(delta_model_path)
-        print('Finished training delta classifiers')
+    # If the model files do not exist, train the models and save them
+    print('Start training delta classifiers...')
+    delta.train(source_buffer, target_buffer, args)
+    print('Finished training delta classifiers')
 
     ### select trajectories and order them according to values
     target_buffer_subset = get_subset_target_buffer(env=env, target_buffer=target_buffer, device=args.dev)
@@ -376,18 +390,10 @@ def traj_valuation(args):
     dvrl = DVRL(source_buffer, target_buffer_subset, args.dev, env, results_dir, args.ex_configs, args)
     # Define the model file names
     dve_model_files = ['reinforce_final', 'reinforce_optimizer_final']
-    # Check if the model files exist
-    if all(Path("%s/dvrl_models/Trained_With_Seed_%d_Friction_%f_Mass_%f_Gamma_%f/" % \
-                (results_dir, args.source_seed, args.source_env_friction,
-                 args.source_env_mass_torso, args.discount) + f).is_file() for f in dve_model_files):
-        # If the model files exist, load them
-        print('Loading DVE...')
-        dvrl.load_dve(dvrl.model_dir, type='final')
-    else:
-        # If the model files do not exist, train the models and save them
-        print('Start training DVE...')
-        dvrl.train()
-        print('Finished training DVE...')
+    # If the model files do not exist, train the models and save them
+    print('Start training DVE...')
+    dvrl.train()
+    print('Finished training DVE...')
 
     # modify reward
     source_buffer = ReplayBuffer(env.observation_space.shape[0], env.action_space.shape[0], device=args.dev)
@@ -402,7 +408,8 @@ def traj_valuation(args):
     dve_out, sel_vec = dvrl.data_valuate(source_buffer, args.batch_size)
 
     for i in range(source_dataset['rewards'].shape[0]):
-        source_dataset['rewards'][i] = (1-args.modify_ratio) * source_dataset['rewards'][i] + args.modify_ratio * dve_out[i]
+        source_dataset['rewards'][i] = (1 - args.modify_ratio) * source_dataset['rewards'][i] + args.modify_ratio * \
+                                       dve_out[i]
     # -----------------------------------------------------------------------------------------------
 
 
@@ -670,7 +677,18 @@ def traj_valuation(args):
 
                 num_iter += 1
 
-    np.save(logger.log_path + f'/avg-rewards-seed{args.seed}.npy', avg_rewards)
+    if args.run_dcla_ratio:
+        np.save(
+            logger.log_path + f"/avg_rewards_edac_{args.d4rl_source_env.split('-')[0]}_{args.d4rl_source_env.split('-')[1]}_{args.d4rl_target_env.split('-')[1]}_dcla_ratio_{args.dcla_ratio}_seed_{args.seed}.npy",
+            avg_rewards)
+    elif args.run_modify_ratio:
+        np.save(
+            logger.log_path + f"/avg_rewards_edac_{args.d4rl_source_env.split('-')[0]}_{args.d4rl_source_env.split('-')[1]}_{args.d4rl_target_env.split('-')[1]}_modify_ratio_{args.modify_ratio}_seed_{args.seed}.npy",
+            avg_rewards)
+    elif args.run_std_scale:
+        np.save(
+            logger.log_path + f"/avg_rewards_edac_{args.d4rl_source_env.split('-')[0]}_{args.d4rl_source_env.split('-')[1]}_{args.d4rl_target_env.split('-')[1]}_std_scale_{args.std_scale}_seed_{args.seed}.npy",
+            avg_rewards)
 
     wandb.finish()
 
@@ -707,6 +725,9 @@ def main(pass_in=None):
     args.modify_ratio = 0.05
     args.outer_iterations = 20000
     args.num_critics = 50
+    args.run_dcla_ratio = False
+    args.run_modify_ratio = False
+    args.run_std_scale = False
 
     # walker2d
     # walker2d-medium-v2, walker2d-expert-v2
@@ -717,6 +738,9 @@ def main(pass_in=None):
     args.modify_ratio = 0.05
     args.outer_iterations = 20000
     args.num_critics = 10
+    args.run_dcla_ratio = False
+    args.run_modify_ratio = False
+    args.run_std_scale = False
 
     # halfcheetah
     # halfcheetah-medium-v2, halfcheetah-expert-v2
@@ -727,6 +751,9 @@ def main(pass_in=None):
     args.modify_ratio = 0.05
     args.outer_iterations = 20000
     args.num_critics = 10
+    args.run_dcla_ratio = False
+    args.run_modify_ratio = False
+    args.run_std_scale = False
 
     if hasattr(args, 'dataset'):  # e.g. --dataset hopper-random-v2_hopper-medium-v2,walker2d-random-v2_walker2d-medium-v2
         source_datasets = []
@@ -738,20 +765,12 @@ def main(pass_in=None):
             target_datasets.append(td)
 
     if hasattr(args, 'exp_type'):
-        run_vanilla = False
-        run_without_CL = False
         run_traj_valuation = False
         ets = args.exp_type.split('_')
         for et in ets:
-            if et == 'vanilla':
-                run_vanilla = True
-            elif et == 'withoutCL':
-                run_without_CL = True
-            elif et == 'trajValuation':
+            if et == 'trajValuation':
                 run_traj_valuation = True
     else:
-        run_vanilla = True
-        run_without_CL = True
         run_traj_valuation = True
 
     # ablation study over parameters
@@ -770,16 +789,10 @@ def main(pass_in=None):
     else:
         std_scales = [0.01, 0.1, 1, 10, 100]
 
-    if hasattr(args, 'temperatures'):
-        temperatures = list(args.temperatures)
-    else:
-        temperatures = [0.1, 1, 10, 100, 1000]
-
     run_exp = {
         'dcla_ratios': True,
         'modify_ratios': True,
         'std_scales': True,
-        'temperatures': True
     }
     if hasattr(args, 'ablation_types'):  # separated by comma
         for re in run_exp:
@@ -800,18 +813,50 @@ def main(pass_in=None):
                 args.d4rl_source_env = sd
                 args.d4rl_target_env = td
                 args.dcla_ratio = dr
-
-                if run_vanilla:
-                    # run vanilla
-                    vanilla(args)
-
-                if run_without_CL:
-                    # run without_CL
-                    without_CL(args)
+                args.run_dcla_ratio = True
 
                 if run_traj_valuation:
                     # run traj_valuation
                     traj_valuation(args)
+
+    # hopper
+    # hopper-medium-v2, hopper-expert-v2
+    args = arguments[('hopper-medium-v2', 'hopper-expert-v2')]
+    args.dcla_epochs = 50
+    args.dcla_hidden_size = 512
+    args.dcla_ratio = 0.7
+    args.modify_ratio = 0.05
+    args.outer_iterations = 20000
+    args.num_critics = 50
+    args.run_dcla_ratio = False
+    args.run_modify_ratio = False
+    args.run_std_scale = False
+
+    # walker2d
+    # walker2d-medium-v2, walker2d-expert-v2
+    args = arguments[('walker2d-medium-v2', 'walker2d-expert-v2')]
+    args.dcla_epochs = 50
+    args.dcla_hidden_size = 512
+    args.dcla_ratio = 0.7
+    args.modify_ratio = 0.05
+    args.outer_iterations = 20000
+    args.num_critics = 10
+    args.run_dcla_ratio = False
+    args.run_modify_ratio = False
+    args.run_std_scale = False
+
+    # halfcheetah
+    # halfcheetah-medium-v2, halfcheetah-expert-v2
+    args = arguments[('halfcheetah-medium-v2', 'halfcheetah-expert-v2')]
+    args.dcla_epochs = 50
+    args.dcla_hidden_size = 512
+    args.dcla_ratio = 0.7
+    args.modify_ratio = 0.05
+    args.outer_iterations = 20000
+    args.num_critics = 10
+    args.run_dcla_ratio = False
+    args.run_modify_ratio = False
+    args.run_std_scale = False
 
     if run_exp['modify_ratios']:
         for mr in modify_ratios:
@@ -825,18 +870,50 @@ def main(pass_in=None):
                 args.d4rl_source_env = sd
                 args.d4rl_target_env = td
                 args.modify_ratio = mr
-
-                if run_vanilla:
-                    # run vanilla
-                    vanilla(args)
-
-                if run_without_CL:
-                    # run without_CL
-                    without_CL(args)
+                args.run_modify_ratio = True
 
                 if run_traj_valuation:
                     # run traj_valuation
                     traj_valuation(args)
+
+    # hopper
+    # hopper-medium-v2, hopper-expert-v2
+    args = arguments[('hopper-medium-v2', 'hopper-expert-v2')]
+    args.dcla_epochs = 50
+    args.dcla_hidden_size = 512
+    args.dcla_ratio = 0.7
+    args.modify_ratio = 0.05
+    args.outer_iterations = 20000
+    args.num_critics = 50
+    args.run_dcla_ratio = False
+    args.run_modify_ratio = False
+    args.run_std_scale = False
+
+    # walker2d
+    # walker2d-medium-v2, walker2d-expert-v2
+    args = arguments[('walker2d-medium-v2', 'walker2d-expert-v2')]
+    args.dcla_epochs = 50
+    args.dcla_hidden_size = 512
+    args.dcla_ratio = 0.7
+    args.modify_ratio = 0.05
+    args.outer_iterations = 20000
+    args.num_critics = 10
+    args.run_dcla_ratio = False
+    args.run_modify_ratio = False
+    args.run_std_scale = False
+
+    # halfcheetah
+    # halfcheetah-medium-v2, halfcheetah-expert-v2
+    args = arguments[('halfcheetah-medium-v2', 'halfcheetah-expert-v2')]
+    args.dcla_epochs = 50
+    args.dcla_hidden_size = 512
+    args.dcla_ratio = 0.7
+    args.modify_ratio = 0.05
+    args.outer_iterations = 20000
+    args.num_critics = 10
+    args.run_dcla_ratio = False
+    args.run_modify_ratio = False
+    args.run_std_scale = False
 
     if run_exp['std_scales']:
         for ss in std_scales:
@@ -850,39 +927,7 @@ def main(pass_in=None):
                 args.d4rl_source_env = sd
                 args.d4rl_target_env = td
                 args.std_scale = ss
-
-                if run_vanilla:
-                    # run vanilla
-                    vanilla(args)
-
-                if run_without_CL:
-                    # run without_CL
-                    without_CL(args)
-
-                if run_traj_valuation:
-                    # run traj_valuation
-                    traj_valuation(args)
-
-    if run_exp['temperatures']:
-        for t in temperatures:
-            for sd, td in zip(source_datasets, target_datasets):
-                # last chance to modify args
-                args = arguments[(sd, td)]
-                args.alpha = 2.5
-                args.normalize_obs = True
-                args.normalize_reward = False
-                args.task = sd
-                args.d4rl_source_env = sd
-                args.d4rl_target_env = td
-                args.temperature = t
-
-                if run_vanilla:
-                    # run vanilla
-                    vanilla(args)
-
-                if run_without_CL:
-                    # run without_CL
-                    without_CL(args)
+                args.run_std_scale = True
 
                 if run_traj_valuation:
                     # run traj_valuation
