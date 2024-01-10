@@ -685,9 +685,9 @@ def main(pass_in=None):
     torch.cuda.manual_seed(args.seed)
 
     source_datasets = [
-        'hopper-medium-v2',
-        'walker2d-medium-v2',
-        'halfcheetah-medium-v2'
+        'hopper-random-v2',
+        'walker2d-random-v2',
+        'halfcheetah-random-v2'
     ]
     target_datasets = [
         'hopper-expert-v2',
@@ -700,8 +700,8 @@ def main(pass_in=None):
         arguments[(sd, td)] = parse_args('./reproduce/td3bc/config/offline/cldv/base.py')
 
     # hopper
-    # hopper-medium-v2, hopper-expert-v2
-    args = arguments[('hopper-medium-v2', 'hopper-expert-v2')]
+    # hopper-random-v2, hopper-expert-v2
+    args = arguments[('hopper-random-v2', 'hopper-expert-v2')]
     args.dcla_epochs = 50
     args.dcla_hidden_size = 512
     args.dcla_ratio = 0.7
@@ -712,8 +712,8 @@ def main(pass_in=None):
     args.run_std_scale = False
 
     # walker2d
-    # walker2d-medium-v2, walker2d-expert-v2
-    args = arguments[('walker2d-medium-v2', 'walker2d-expert-v2')]
+    # walker2d-random-v2, walker2d-expert-v2
+    args = arguments[('walker2d-random-v2', 'walker2d-expert-v2')]
     args.dcla_epochs = 50
     args.dcla_hidden_size = 512
     args.dcla_ratio = 0.7
@@ -724,8 +724,8 @@ def main(pass_in=None):
     args.run_std_scale = False
 
     # halfcheetah
-    # halfcheetah-medium-v2, halfcheetah-expert-v2
-    args = arguments[('halfcheetah-medium-v2', 'halfcheetah-expert-v2')]
+    # halfcheetah-random-v2, halfcheetah-expert-v2
+    args = arguments[('halfcheetah-random-v2', 'halfcheetah-expert-v2')]
     args.dcla_epochs = 50
     args.dcla_hidden_size = 512
     args.dcla_ratio = 0.7
@@ -800,8 +800,8 @@ def main(pass_in=None):
                     traj_valuation(args)
 
     # hopper
-    # hopper-medium-v2, hopper-expert-v2
-    args = arguments[('hopper-medium-v2', 'hopper-expert-v2')]
+    # hopper-random-v2, hopper-expert-v2
+    args = arguments[('hopper-random-v2', 'hopper-expert-v2')]
     args.dcla_epochs = 50
     args.dcla_hidden_size = 512
     args.dcla_ratio = 0.7
@@ -812,8 +812,8 @@ def main(pass_in=None):
     args.run_std_scale = False
 
     # walker2d
-    # walker2d-medium-v2, walker2d-expert-v2
-    args = arguments[('walker2d-medium-v2', 'walker2d-expert-v2')]
+    # walker2d-random-v2, walker2d-expert-v2
+    args = arguments[('walker2d-random-v2', 'walker2d-expert-v2')]
     args.dcla_epochs = 50
     args.dcla_hidden_size = 512
     args.dcla_ratio = 0.7
@@ -824,8 +824,8 @@ def main(pass_in=None):
     args.run_std_scale = False
 
     # halfcheetah
-    # halfcheetah-medium-v2, halfcheetah-expert-v2
-    args = arguments[('halfcheetah-medium-v2', 'halfcheetah-expert-v2')]
+    # halfcheetah-random-v2, halfcheetah-expert-v2
+    args = arguments[('halfcheetah-random-v2', 'halfcheetah-expert-v2')]
     args.dcla_epochs = 50
     args.dcla_hidden_size = 512
     args.dcla_ratio = 0.7
@@ -854,8 +854,8 @@ def main(pass_in=None):
                     traj_valuation(args)
 
     # hopper
-    # hopper-medium-v2, hopper-expert-v2
-    args = arguments[('hopper-medium-v2', 'hopper-expert-v2')]
+    # hopper-random-v2, hopper-expert-v2
+    args = arguments[('hopper-random-v2', 'hopper-expert-v2')]
     args.dcla_epochs = 50
     args.dcla_hidden_size = 512
     args.dcla_ratio = 0.7
@@ -866,8 +866,8 @@ def main(pass_in=None):
     args.run_std_scale = False
 
     # walker2d
-    # walker2d-medium-v2, walker2d-expert-v2
-    args = arguments[('walker2d-medium-v2', 'walker2d-expert-v2')]
+    # walker2d-random-v2, walker2d-expert-v2
+    args = arguments[('walker2d-random-v2', 'walker2d-expert-v2')]
     args.dcla_epochs = 50
     args.dcla_hidden_size = 512
     args.dcla_ratio = 0.7
@@ -878,8 +878,8 @@ def main(pass_in=None):
     args.run_std_scale = False
 
     # halfcheetah
-    # halfcheetah-medium-v2, halfcheetah-expert-v2
-    args = arguments[('halfcheetah-medium-v2', 'halfcheetah-expert-v2')]
+    # halfcheetah-random-v2, halfcheetah-expert-v2
+    args = arguments[('halfcheetah-random-v2', 'halfcheetah-expert-v2')]
     args.dcla_epochs = 50
     args.dcla_hidden_size = 512
     args.dcla_ratio = 0.7
