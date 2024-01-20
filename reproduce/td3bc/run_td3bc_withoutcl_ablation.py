@@ -523,7 +523,7 @@ def main(pass_in=None):
                 args.d4rl_source_env = sd
                 args.d4rl_target_env = td
                 args.filter_ratio = fr
-                args.run_modify_ratio = True
+                args.run_filter_ratio = True
 
                 print(f'dcla_ratio: {args.dcla_ratio}')
                 print(f'filter_ratio: {args.filter_ratio}')

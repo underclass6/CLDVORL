@@ -386,7 +386,7 @@ def main(pass_in=None):
     else:
         dcla_ratios = [0.0, 0.25, 0.5, 0.75, 1.0]
 
-    if hasattr(args, 'modify_ratios'):
+    if hasattr(args, 'filter_ratios'):
         filter_ratios = list(args.filter_ratios)
     else:
         filter_ratios = [0.0, 0.25, 0.5, 0.75, 1.0]
