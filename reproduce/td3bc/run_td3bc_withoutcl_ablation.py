@@ -97,8 +97,8 @@ def without_CL(args):
                                                                                args.d4rl_target_env.split('-')[1], 1e6,
                                                                                args.split_ratio, source_env,
                                                                                source_buffer_dataset, keep_traj=True,
-                                                                               normalize_obs=False,
-                                                                               normalize_reward=False)
+                                                                               normalize_obs=args.normalize_obs,
+                                                                               normalize_reward=args.normalize_reward)
 
     source_buffer = ReplayBuffer(env.observation_space.shape[0], env.action_space.shape[0], device=args.dev)
     for i in tqdm(range(len(dataset_source['observations']))):
